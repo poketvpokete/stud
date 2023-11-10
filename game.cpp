@@ -16,17 +16,19 @@ Game::Game():
   for (int y = 5; y < 8; ++y)
     for (int x = (y + 1) % 2; x < 8; x += 2)
       board_[x][y] = WHITE;
-                               
+//созднание поля и расстановка шашек                               
 }
 
 Game::Cell Game::cell(int x, int y) const
 {
   return board_[x][y];
+  //определение клетки
 }
 
 Pos Game::selectedCell() const
 {
   return std::make_pair(selectedCellX_, selectedCellY_);
+  //отметка выбранной клетки
 }
 
 void Game::selectCell(int x, int y)
@@ -41,10 +43,12 @@ void Game::selectCell(int x, int y)
     selectedCellX_ = -1;
     selectedCellY_ = -1;
   }
+  //перемещение шашки на новую клетку
 }
 
 void Game::move(int x, int y)
 {
+  //ходы для белых ии
   assert(selectedCellX_ != -1);
   assert(selectedCellY_ != -1);
 
@@ -61,13 +65,16 @@ void Game::move(int x, int y)
   bool moved = false;
 
   for (std::vector<Move>::iterator i = listOfLegalMoves.begin(); i != listOfLegalMoves.end(); ++i)
+    //проверка возможности рубки шашек
   {
     if (step == i->front() && (!isAfterJump_ || (isAfterJump_ && abs(selectedCellX_ - x) == 2)))
     {
       moved = true;
       board_[selectedCellX_][selectedCellY_] = EMPTY;
       board_[x][y] = WHITE;
+      //рубка шашки
       if (abs(selectedCellX_ - x) == 2)
+        
       {
         board_[(selectedCellX_ + x) / 2][(selectedCellY_ + y) / 2] = EMPTY;
         selectedCellX_ = x;
@@ -85,6 +92,7 @@ void Game::move(int x, int y)
   {
     isAfterJump_ = false;
     blackMove();
+    //передача хода чёрным шашкам
   }
   selectedCellX_ = -1;
   selectedCellY_ = -1;
@@ -92,7 +100,7 @@ void Game::move(int x, int y)
 
 void Game::getListOfLegalMoves(Side side, std::vector<Move> &lolm) const
 {
-  // checking for jump
+  // проверка рубки
   for (int x = 0; x < 8; ++x)
     for (int y = 0; y < 8; ++y)
       if (board_[x][y] == static_cast<Cell>(side))
@@ -100,10 +108,10 @@ void Game::getListOfLegalMoves(Side side, std::vector<Move> &lolm) const
         Move move;
         findAllJumps(x, y, side, move, lolm);
       }
-  // jumping is mandatory
+  // рубка обязательна
   if (lolm.empty())
   {
-    // checking for move
+    // поиск ходов
     for (int x = 0; x < 8; ++x)
       for (int y = 0; y < 8; ++y)
         if (board_[x][y] == static_cast<Cell>(side))
@@ -129,10 +137,12 @@ void Game::getListOfLegalMoves(Side side, std::vector<Move> &lolm) const
 
 void Game::findAllJumps(int x, int y, Side side, Move move, std::vector<Move> &lolm) const
 {
+  //поиск возможных рубок
   const int dx[] = {-1, 1, 1, -1};
   const int dy[] = {-1, -1, 1, 1};
   for (int d = 0; d < 4; ++d)
   {
+    //смотрит свободные поля
     const int xx = x + dx[d];
     const int yy = y + dy[d];
     if (xx < 0 || xx >= 8 || yy < 0 || yy >= 8)
@@ -164,6 +174,7 @@ void Game::findAllJumps(int x, int y, Side side, Move move, std::vector<Move> &l
 
 bool Game::blackMove(int level)
 {
+  //ии чёрных шашок
   std::vector<Move> listOfLegalMoves;
   getListOfLegalMoves(BLACK_SIDE, listOfLegalMoves);
   if (listOfLegalMoves.empty())
@@ -173,6 +184,7 @@ bool Game::blackMove(int level)
   }
   int maxScore = -20;
   std::vector<Move>::iterator bestMove = listOfLegalMoves.end();
+  //выборка лучшего хода
   for (std::vector<Move>::iterator move = listOfLegalMoves.begin(); move != listOfLegalMoves.end(); ++move)
   {
     Game game = *this;
@@ -184,6 +196,7 @@ bool Game::blackMove(int level)
         game.board_[(i->first.first + i->second.first) / 2][(i->first.second + i->second.second) / 2] = EMPTY;
     }
     if (level == 0 || game.whiteMove(level - 1))
+      //вычисляет возможные очки
     {
       int tmpScore = game.score();
       if (maxScore < tmpScore)
@@ -201,6 +214,7 @@ bool Game::blackMove(int level)
   }
   for (Move::iterator i = bestMove->begin(); i != bestMove->end(); ++i)
   {
+    //делает ход
     board_[i->first.first][i->first.second] = EMPTY;
     board_[i->second.first][i->second.second] = BLACK;
     if (abs(i->second.first - i->first.first) == 2)
@@ -211,6 +225,7 @@ bool Game::blackMove(int level)
 
 bool Game::whiteMove(int level)
 {
+  //ии белых
   std::vector<Move> listOfLegalMoves;
   getListOfLegalMoves(WHITE_SIDE, listOfLegalMoves);
   if (listOfLegalMoves.empty())
@@ -225,12 +240,14 @@ bool Game::whiteMove(int level)
     Game game = *this;
     for (Move::iterator i = move->begin(); i != move->end(); ++i)
     {
+      //выборка лучшего хода
       game.board_[i->first.first][i->first.second] = EMPTY;
       game.board_[i->second.first][i->second.second] = WHITE;
       if (abs(i->second.first - i->first.first) == 2)
         game.board_[(i->first.first + i->second.first) / 2][(i->first.second + i->second.second) / 2] = EMPTY;
     }
     if (level == 0 || game.blackMove(level - 1))
+      //вычисляет возможные очки
     {
       int tmpScore = game.score();
       if (maxScore > tmpScore)
@@ -246,6 +263,7 @@ bool Game::whiteMove(int level)
     }
   }
   for (Move::iterator i = bestMove->begin(); i != bestMove->end(); ++i)
+     //делает ход
   {
     board_[i->first.first][i->first.second] = EMPTY;
     board_[i->second.first][i->second.second] = WHITE;
@@ -265,4 +283,5 @@ int Game::score() const
       else if (board_[x][y] == WHITE)
         --res;
   return res;
+  //Подсчёт колва шашек
 }
