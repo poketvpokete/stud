@@ -28,4 +28,5 @@ private:
   bool blackMove(int level = 6);
   bool whiteMove(int level = 6);
   int score() const;
+//хранилище данных
 };
