@@ -6,6 +6,7 @@ Game game;
 
 void display()
 {
+  //создание и вывод доски
   glClear(GL_COLOR_BUFFER_BIT);
   for (int x = 0; x < 8; ++x)
     for (int y = 0; y < 8; ++y)
@@ -25,6 +26,7 @@ void display()
       case Game::EMPTY:
         break;
       case Game::BLACK:
+        //расстановка чёрных шашек
         glColor3f(0.3f, 0.3f, 0.3f);
         glBegin(GL_POLYGON);
         for (int a = 0; a < 5; ++a)
@@ -36,6 +38,7 @@ void display()
         glEnd();
         break;
       case Game::WHITE:
+        //ставит белые
         Pos selected = game.selectedCell();
         if (selected.first == x && selected.second == y)
           glColor3f(1.0f, 0.0f, 0.0f);
@@ -54,6 +57,7 @@ void display()
     }
 #ifdef DEBUG
   std::vector<Move> moves;
+  //подсветка ходов
   game.getListOfLegalMoves(Game::WHITE_SIDE, moves);
   glColor3f(0.0f, 1.0f, 0.0f);
   glBegin(GL_LINES);
@@ -74,6 +78,7 @@ void display()
 }
 
 void mouse(int button, int state, int x, int y)
+//ловит движения мыши
 {
   if (state == GLUT_UP)
   {
